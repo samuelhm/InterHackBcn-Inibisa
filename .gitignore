@@ -1,0 +1,97 @@
+# ─── Python ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.so
+dist/
+build/
+*.manifest
+*.spec
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.pyo
+
+# ─── Virtual Environment ────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ─── Docker ─────────────────────────────────────────────
+docker-data/
+pgdata/
+
+# ─── PostgreSQL ─────────────────────────────────────────
+*.sql~
+*.sql.bak
+
+# ─── Environment & Secrets ──────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+credentials.json
+
+# ─── Data Files (large CSVs/Excel for development) ──────
+data/raw/*
+data/*.xlsx
+data/*.csv
+!data/raw/.gitkeep
+
+# ─── ML Models ──────────────────────────────────────────
+analytics/models/*
+!analytics/models/.gitkeep
+*.pkl
+*.joblib
+*.h5
+*.onnx
+*.pt
+*.pth
+
+# ─── Jupyter Notebooks ─────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ─── Streamlit ──────────────────────────────────────────
+.streamlit/secrets*.toml
+
+# ─── IDE / Editor ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-*
+*.code-workspace
+
+# ─── OS ─────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─── Logs ────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Misc ────────────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+.cache/
+*.orig

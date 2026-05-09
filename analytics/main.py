@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from analytics.src.engine_commodity import CommodityEngine  # noqa: E402
 from analytics.src.engine_technical import TechnicalEngine  # noqa: E402
+from analytics.src.ml_trainer import train_model  # noqa: E402
 from analytics.src.prioritizer import Prioritizer  # noqa: E402
 from analytics.utils.config import FECHA_HOY  # noqa: E402
 from analytics.utils.db import get_engine  # noqa: E402
@@ -115,6 +116,19 @@ def run_pipeline(engine):
     n_prio = prioritizer.run()
     if n_prio:
         logger.info("Prioritised %d alert(s)", n_prio)
+
+    # ── Step 3: ML model training (nightly) ───────────────────────
+    #   Train on accumulated delegate feedback so the model improves
+    #   over time.  On the first run (no feedback yet) this will skip.
+    #   The trained model is loaded by MLEngine in the next pipeline run.
+    try:
+        trained = train_model(engine)
+        if trained:
+            logger.info("ML model trained and saved for next run")
+        else:
+            logger.info("ML training skipped (insufficient feedback data)")
+    except Exception:
+        logger.warning("ML training failed (non-fatal)", exc_info=True)
 
     logger.info("=== Pipeline end ===")
 

@@ -12,12 +12,14 @@ five weighted factors plus an ML contribution:
     impacto_estimado     12.5 %     25      Missed revenue = opportunity
     urgencia             10 %       20      Time sensitivity
     perfil_cliente       10 %       20      Client loyalty profile
-    ml_score             20 %       40      ML prediction (0 until trained)
+    ml_score             20 %       40      ML conversion probability
     ─────────────────── ────────  ────────  ──────────────────────────────
     TOTAL               100 %      200
 
-When the ML model is not yet trained, ``ml_score`` is 0 for every alert,
-so the effective maximum priority is 160.
+Before training data is available, ``ml_score`` uses a heuristic based on
+alert type, profile, impact, and urgency. As delegates register feedback,
+the XGBoost model trains on real outcomes and progressively replaces
+the heuristic — the system improves daily.
 
 All weights are configured in ``analytics/utils/config.py``.
 """
@@ -142,10 +144,8 @@ class Prioritizer:
             .fillna(0.50)
         )
 
-        # 6. ML score — stub returns 0.0 for every alert
-        df["ml_score"] = df["id_alerta"].apply(
-            lambda uid: self.ml.get_score(str(uid))
-        )
+        # 6. ML score — XGBoost probability or cold-start heuristic
+        df["ml_score"] = self.ml.predict_batch(df)
 
         # ── Weighted sum ────────────────────────────────────────
         w = PRIORITY_WEIGHTS

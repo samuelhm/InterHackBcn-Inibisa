@@ -97,24 +97,22 @@ Archivo: `analytics/src/prioritizer.py`
 
 ---
 
-## Fase 6: ML Engine (stub) ✅ STUB COMPLETADO
+## Fase 6: ML Engine ✅ COMPLETADA
 
-**Objetivo:** Stub del motor de ML que devuelve 0.0 (sin modelo entrenado).
+**Objetivo:** Motor de ML que predice la probabilidad de conversión de cada alerta.
 
-Archivo: `analytics/src/ml_engine.py`
+Archivos: `analytics/src/ml_engine.py`, `analytics/src/ml_trainer.py`
 
-- [x] Función `get_score(alert_id)` que retorna 0.0 (sin modelo)
-- [x] Estructura lista para cargar modelo desde `analytics/models/`
-- [x] Integrado en el priorizador: `score_conversion = ml_score × 0.20 × 200`
-
-### ml_trainer.py (entrenamiento nocturno) 🔲 PENDIENTE
-
-- [ ] **Consultar** `alertas_feedback` (vista con alertas que tienen `feedback IS NOT NULL`)
-- [ ] **Features**: tipo_alerta, bloque, provincia, impacto_estimado, urgencia_dias, ratio_promiscuidad, dias_desde_ultima_compra, perfil_cliente, freq_media_dias, n_compras_hist, probabilidad_deteccion
-- [ ] **Target**: `feedback` (0 = negativo, 1 = positivo)
-- [ ] **Entrenar** modelo de clasificación binaria (scikit-learn o XGBoost)
-- [ ] **Guardar** modelo entrenado en `analytics/models/`
-- [ ] **Ejecución programada**: integrado en el pipeline diario
+- [x] **Cold-start heuristic** — cuando no hay suficiente feedback, devuelve probabilidades basadas en tipo_alerta, perfil_cliente, impacto y urgencia (derivado del feature importance del notebook Colab)
+- [x] **XGBoost** con `scale_pos_weight` para desbalanceo de clases (enfoque validado en el Colab del equipo)
+- [x] **Features**: tipo_alerta, bloque, provincia, perfil_cliente (OneHotEncoder) + potencial_h, impacto_estimado, urgencia_dias, ratio_promiscuidad, dias_desde_ultima_compra, freq_media_dias, n_compras_hist (StandardScaler)
+- [x] **Target**: `feedback` real del delegado (0=negativo, 1=positivo)
+- [x] **Threshold mínimo**: 30 muestras de feedback para entrenar (configurable en `ml_engine.py`)
+- [x] **Persistencia**: model.pkl, preprocessor.pkl, metadata.json en `analytics/models/`
+- [x] **Integración en priorizador**: `predict_batch()` reemplaza el stub que devolvía 0.0
+- [x] **Reentrenamiento nocturno**: integrado en el pipeline (`main.py` Step 3)
+- [x] **Metadatos**: fecha, samples, accuracy, recall, scale_pos_weight guardados en metadata.json
+- **Documentación**: `analytics/ML_APPROACH.md` describe la conexión con el notebook Colab del equipo
 
 **Dependencias:** Fase 5
 
@@ -180,16 +178,18 @@ Archivo: `frontend/app.py`
 
 ---
 
-## Fase 10: Entrenamiento ML nocturno automatizado 🔲 PENDIENTE
+## Fase 10: Entrenamiento ML nocturno automatizado ✅ COMPLETADO
 
 **Objetivo:** El modelo de ML se reentrena cada día con los nuevos feedbacks.
 
-- [ ] **Script `ml_trainer.py`** completamente funcional con modelo real
-- [ ] **Integración en el pipeline**: detección + priorización de día, entrenamiento de noche
-- [ ] **Métricas de rendimiento**: accuracy, precisión, recall del modelo
-- [ ] **Registro de entrenamientos**: log de fecha, nº de muestras, métricas, modelo guardado
+- [x] **Script `ml_trainer.py`** completamente funcional con XGBoost
+- [x] **Integración en el pipeline**: detección → priorización → entrenamiento ML (Step 3 en main.py)
+- [x] **Métricas de rendimiento**: accuracy, precision, recall guardados en `metadata.json`
+- [x] **Registro de entrenamientos**: log de fecha, nº de muestras, métricas
+- [x] **Cold-start heuristic**: sin feedback suficiente, usa reglas basadas en alert_type y perfil
+- [x] **Reentrenamiento progresivo**: cada día con más feedback, el modelo mejora
 
-**Dependencias:** Fase 6 (stub ✅), Fase 7 ✅
+**Dependencias:** Fase 6 ✅
 
 ---
 
@@ -197,10 +197,8 @@ Archivo: `frontend/app.py`
 
 ```
 Fase 1 ✅ → Fase 2 ✅ → Fase 3 ✅ ──┐
-                                 ├── Fase 5 ✅ → Fase 6 ✅* → Fase 7 ✅ → Fase 8 🔲
-                    Fase 4 ✅ ──┘                              Fase 9 🔄 → Fase 10 🔲
-
-* Fase 6 stub completado (ml_engine.py retorna 0.0). Entrenamiento real pendiente (Fase 10).
+                                 ├── Fase 5 ✅ → Fase 6 ✅ → Fase 7 ✅ → Fase 8 🔲
+                    Fase 4 ✅ ──┘                              Fase 9 🔄 → Fase 10 ✅
 ```
 
 ## Notas

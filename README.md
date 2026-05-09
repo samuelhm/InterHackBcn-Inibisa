@@ -1,0 +1,28 @@
+proyecto-inibsa/
+├── docker-compose.yml         # Orquestación de contenedores (DB, Analytics, UI)
+├── .env                       # Variables de entorno (credenciales DB, paths)
+├── README.md                  # Documentación técnica y guía de levantamiento
+│
+├── database/                  # CAPA DE DATOS (PostgreSQL)
+│   ├── init.sql               # Scripts para crear tablas de clientes, ventas y potencial
+│   └── Dockerfile             # Customización de la imagen de Postgres si es necesaria
+│
+├── analytics/                 # CAPA ANALÍTICA Y PRIORIZACIÓN
+│   ├── Dockerfile             # Imagen con Python, XGBoost y conectores DB
+│   ├── requirements.txt       # Librerías: xgboost, pandas, sqlalchemy, lifelines
+│   ├── main.py                # Pipeline diario: Ingesta -> ML -> Priorización
+│   ├── models/                # Modelos entrenados (archivos .json o .pkl)
+│   ├── src/
+│   │   ├── engine_commodity.py # Lógica de consumo esperado y captura
+│   │   ├── engine_technical.py # Lógica de detección de riesgo de abandono
+│   │   └── prioritizer.py     # Algoritmo de scoring e impacto económico
+│   └── utils/                 # Conectores DB y funciones de limpieza de datos
+│
+├── frontend/                  # CAPA DE ACTIVACIÓN (Streamlit)
+│   ├── Dockerfile             # Imagen ligera para la interfaz de usuario
+│   ├── requirements.txt       # streamlit, pandas, plotly
+│   ├── app.py                 # Aplicación principal (Visualización de alertas)
+│   └── components/            # Filtros por delegado, familia de producto, etc.
+│
+└── data/                      # VOLUMEN LOCAL (Solo para desarrollo)
+    └── raw/                   # CSVs originales del Hackathon (Ventas, Clientes)

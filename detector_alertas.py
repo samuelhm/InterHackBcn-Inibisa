@@ -4,9 +4,20 @@ from sqlalchemy import create_engine, text
 from datetime import datetime
 import uuid
 
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
+
 # --- CONFIGURACIÓN DE CONEXIÓN ---
-# Ajusta estas credenciales a tu entorno local
-DB_URL = "postgresql://fede:password@localhost:5432/inibsa"
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+
+DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DB_URL)
 
 # Fecha de referencia para el Hackaton (Simulando "hoy")
@@ -39,10 +50,10 @@ def analizar_cliente(id_cliente):
         c.provincia,
         pot.potencial_h
     FROM ventas v
-    JOIN productos p ON v.id_producto = p.id_producto
-    JOIN clientes c ON v.id_cliente = c.id_cliente
+    JOIN producto p ON v.id_producto = p.id
+    JOIN cliente c ON v.id_cliente = c.id
     LEFT JOIN potencial pot ON (v.id_cliente = pot.id_cliente AND p.familia = pot.familia)
-    WHERE v.id_cliente = '{id_cliente}'
+    WHERE v.id_cliente = {id_cliente}
     ORDER BY v.fecha ASC
     """
     
@@ -115,12 +126,13 @@ def analizar_cliente(id_cliente):
             if es_caida_volumen: motivos.append(f"Caída importe ({ultimo_volumen}€ vs {vol_medio:.1f}€ media)")
             if es_anomalo: motivos.append("Patrón de compra fuera de rango estadístico")
 
-            # Mapeo al esquema de la tabla 'alertas'
+            # Mapeo al esquema de la tabla 'alertas' definido en 001_create_alertas.sql
+            bloque_raw = str(historial['bloque'].iloc[0])
             alerta = {
                 'id_alerta': str(uuid.uuid4()),
                 'id_cliente': str(id_cliente),
                 'familia': familia,
-                'bloque': 'Commodities' if 'Commodities' in str(historial['bloque'].iloc[0]) else 'Productos Técnicos',
+                'bloque': 'Commodities' if 'Commodity' in bloque_raw or 'COMMODITIES' in bloque_raw.upper() else 'Productos Técnicos',
                 'provincia': historial['provincia'].iloc[0],
                 'potencial_h': float(historial['potencial_h'].iloc[0] or 0),
                 'dias_desde_ultima_compra': int(dias_desde_ultima),
@@ -130,7 +142,7 @@ def analizar_cliente(id_cliente):
                 'alerta_volumen': bool(es_caida_volumen),
                 'alerta_ausencia': bool(es_ausencia),
                 'alerta_anomalia': bool(es_anomalo),
-                'probabilidad_deteccion': 0.90, # Confianza del modelo de detección
+                'probabilidad_deteccion': 0.90, 
                 'fecha': FECHA_HOY.date()
             }
             alertas_cliente.append(alerta)

@@ -144,3 +144,10 @@ from datetime import datetime
 FECHA_HOY = datetime.fromisoformat(
     os.getenv("FECHA_HOY", "2026-05-09")
 )
+
+# ═══════════════════════════════════════════════════════════════
+# Deduplication
+# ═══════════════════════════════════════════════════════════════
+
+DEDUP_WINDOW_DAYS = 7  # Skip creation if a pending alert exists
+                       # for the same client-family within this window

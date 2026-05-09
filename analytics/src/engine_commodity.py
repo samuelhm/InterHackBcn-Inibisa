@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from analytics.utils.config import (  # noqa: E402
     COMMODITY as THRESHOLDS,
+    DEDUP_WINDOW_DAYS,
     FECHA_HOY,
 )
 from analytics.utils.db import get_engine  # noqa: E402
@@ -104,37 +105,69 @@ class CommodityEngine:
         )
         return pd.read_sql(query, self.engine, params={"cid": id_cliente})
 
-    def analyze_client(self, id_cliente: int) -> list[dict]:
-        """Analyse all **commodity** families for a single client."""
+    def analyze_client(self, id_cliente: int) -> tuple[list[dict], int]:
+        """Analyse all **commodity** families for a single client.
+
+        Returns (alertas, skipped) where skipped is the number of
+        alerts that were not created because a pending one already exists.
+        """
         df = self.get_client_data(id_cliente)
         if df.empty:
-            return []
+            return [], 0
 
         df_c = df[df["bloque"].apply(_is_commodity)].copy()
         if df_c.empty:
-            return []
+            return [], 0
 
         alertas: list[dict] = []
+        skipped = 0
         for familia, grp in df_c.groupby("familia"):
             alerta = self._analyze_family(grp, id_cliente, familia)
-            if alerta is not None:
-                alertas.append(alerta)
-        return alertas
+            if alerta is None:
+                continue
+            if self._alert_exists(id_cliente, familia):
+                skipped += 1
+                continue
+            alertas.append(alerta)
+        return alertas, skipped
 
     def run(self) -> list[dict]:
         """Run detection across all active clients.  Returns alert rows."""
         clientes = self.get_active_clients()
         logger.info("CommodityEngine — %d active client(s) to analyse", len(clientes))
         todas: list[dict] = []
+        total_skipped = 0
         for i, cid in enumerate(clientes):
-            alertas = self.analyze_client(cid)
+            alertas, skipped = self.analyze_client(cid)
             todas.extend(alertas)
+            total_skipped += skipped
             if (i + 1) % 100 == 0:
                 logger.info("  commodity … %d/%d clients processed", i + 1, len(clientes))
-        logger.info("CommodityEngine — %d alert(s) generated", len(todas))
+        logger.info(
+            "CommodityEngine — %d alert(s) generated, %d skipped (already pending)",
+            len(todas), total_skipped,
+        )
         return todas
 
     # ── internal ───────────────────────────────────────────
+
+    def _alert_exists(self, id_cliente: int, familia: str) -> bool:
+        """Return True if a pending alert already exists for this client-family."""
+        query = text(
+            "SELECT 1 FROM alertas "
+            "WHERE id_cliente = :cid "
+            "  AND familia = :fam "
+            "  AND feedback IS NULL "
+            "  AND fecha >= :since "
+            "LIMIT 1"
+        )
+        since = (self.fecha_ref - timedelta(days=DEDUP_WINDOW_DAYS)).date()
+        with self.engine.connect() as conn:
+            row = conn.execute(
+                query,
+                {"cid": str(id_cliente), "fam": familia, "since": since},
+            )
+            return row.first() is not None
 
     def _analyze_family(
         self, df: pd.DataFrame, id_cliente: int, familia: str

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS producto (
 );
 
 CREATE TABLE IF NOT EXISTS ventas (
-    numero_factura INTEGER,
+    numero_factura BIGINT,
     fecha DATE NOT NULL,
     id_cliente INTEGER REFERENCES cliente(id),
     id_producto INTEGER REFERENCES producto(id),

@@ -1,6 +1,8 @@
 services:
   db:
-    image: postgres:latest
+    build:
+      context: .
+      dockerfile: ./database/Dockerfile
     container_name: inibsa_db
     restart: always
     environment:
@@ -10,10 +12,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/00-init.sql
       - postgres_data:/var/lib/postgresql
 
 volumes:
   postgres_data:
-    # Aquí no se ponen rutas, solo el nombre. 
-    # Docker gestionará el almacenamiento automáticamente.

@@ -47,7 +47,7 @@ El proyecto se presenta en el InterHack BCN 2026, dentro del marco BCN Clima (cr
 
 ## Database Schema (`alertas` table)
 
-La tabla `alertas` es el núcleo del sistema. Su esquema completo está en `example/001_create_alertas.sql`. Columnas clave:
+La tabla `alertas` es el núcleo del sistema. Su esquema completo está en `database/init.sql`. Columnas clave:
 
 | Bloque | Columnas | Responsable |
 |--------|----------|-------------|
@@ -133,8 +133,6 @@ inibisa/
 ├── frontend/          # Streamlit dashboard
 │   ├── app.py         # UI principal
 │   └── requirements.txt
-├── example/           # SQL de referencia
-│   └── 001_create_alertas.sql  # Esquema completo alertas
 ├── docs/              # Documentación del hackathon (PDFs)
 ├── data/              # Datos raw (Datasets.xlsx)
 ├── detector_alertas.py # Script standalone de detección (prototipo)
@@ -147,7 +145,7 @@ inibisa/
 | Componente | Estado |
 |-----------|--------|
 | DB + ingesta | Funcional |
-| Tabla alertas (schema) | Definido en `example/`, no en `init.sql` |
+| Tabla alertas (schema) | Integrada en `init.sql` |
 | Motor de detección | Prototipo funcional (`detector_alertas.py`) |
 | Engine Commodity | Por implementar |
 | Engine Technical | Por implementar |

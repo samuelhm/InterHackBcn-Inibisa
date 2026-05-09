@@ -1,6 +1,6 @@
 # ROADMAP — Smart Demand Signals
 
-Solo se listan las tareas pendientes. Lo ya completado (DB + ingesta, detector_alertas.py prototipo, schema alertas en example/) no se incluye.
+Solo se listan las tareas pendientes. Lo ya completado (DB + ingesta, detector_alertas.py prototipo, schema alertas en init.sql) no se incluye.
 
 ---
 
@@ -8,11 +8,11 @@ Solo se listan las tareas pendientes. Lo ya completado (DB + ingesta, detector_a
 
 **Objetivo:** Que la tabla `alertas` se cree automáticamente al levantar la DB.
 
-- [ ] Migrar el contenido de `example/001_create_alertas.sql` a `database/init.sql` (ENUMs, tabla, índices, triggers, vistas `alertas_delegado` y `alertas_feedback`)
-- [ ] Alternativa: montar `example/001_create_alertas.sql` como volumen adicional en `docker-compose.yml` para que se ejecute tras `init.sql`
-- [ ] Verificar que la tabla se crea correctamente: `docker compose down -v && docker compose up db -d`
+- [x] Migrar el contenido de `example/001_create_alertas.sql` a `database/init.sql` (ENUMs, tabla, índices, triggers, vistas `alertas_delegado` y `alertas_feedback`)
+- [x] Alternativa descartada — migración directa a `init.sql`
+- [x] Verificar que la tabla se crea correctamente: `docker compose down -v && docker compose up db -d`
 
-**Dependencias:** Ninguna
+**Dependencias:** Ninguna | **Estado:** COMPLETADA
 
 ---
 

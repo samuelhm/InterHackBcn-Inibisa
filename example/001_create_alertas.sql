@@ -73,6 +73,13 @@ CREATE TABLE IF NOT EXISTS alertas (
 
     tipo_alerta             tipo_alerta_enum NOT NULL,
     motivo                  TEXT        NOT NULL,
+    probabilidad_deteccion  REAL        DEFAULT NULL CHECK (probabilidad_deteccion BETWEEN 0 AND 1),
+    
+    -- Indicadores de los 4 puntos de detección solicitados
+    alerta_frecuencia       BOOLEAN     NOT NULL DEFAULT FALSE,
+    alerta_volumen          BOOLEAN     NOT NULL DEFAULT FALSE,
+    alerta_ausencia         BOOLEAN     NOT NULL DEFAULT FALSE,
+    alerta_anomalia         BOOLEAN     NOT NULL DEFAULT FALSE,
   
 
     -- ╔══════════════════════════════════════════════════════════════╗

@@ -255,22 +255,33 @@ class TechnicalEngine:
         piezas: list[str] = []
         if caida_f:
             piezas.append(
-                f"Caida frecuencia (tecnico): gap {freq['ultimo_gap']}d "
-                f"vs media {freq['freq_media']:.0f}d"
+                f"Caida de frecuencia: ultimo intervalo {freq['ultimo_gap']}d "
+                f"vs media historica {freq['freq_media']:.0f}d "
+                f"(umbral {freq['freq_media']:.0f} x {t['caida_frecuencia']['ratio']:.1f} = "
+                f"{freq['freq_media'] * t['caida_frecuencia']['ratio']:.0f}d)"
             )
         if caida_v:
+            caida_pct = (1 - vol['ultimo_volumen'] / vol['vol_medio']) * 100 if vol['vol_medio'] else 0
             piezas.append(
-                f"Caida volumen (tecnico): {vol['ultimo_volumen']:.0f}EUR "
-                f"vs media {vol['vol_medio']:.0f}EUR"
+                f"Caida de volumen: ultimo pedido {vol['ultimo_volumen']:.0f}EUR "
+                f"vs media {vol['vol_medio']:.0f}EUR (cae {caida_pct:.0f}%)"
             )
         if es_ausencia:
-            piezas.append(f"Ausencia (tecnico): {dias_desde_ultima}d sin compra")
+            piezas.append(
+                f"Sin compra hace {dias_desde_ultima}d "
+                f"(umbral: {umbral_ausencia:.0f}d basado en frecuencia media de "
+                f"{freq['freq_media']:.0f}d)"
+            )
         if es_anomalo:
-            piezas.append("Actividad anomala (tecnico, Z-score > 2)")
+            z = compute_z_score(vol['ultimo_volumen'], vol['vol_medio'], vol['vol_std'])
+            piezas.append(
+                f"Actividad anomala: Z-score {z:.1f} "
+                f"(ultimo {vol['ultimo_volumen']:.0f}EUR vs media {vol['vol_medio']:.0f}EUR)"
+            )
         if repos:
             piezas.append(
-                f"Reposicion (tecnico): gap {dias_desde_ultima}d vs "
-                f"ciclo {freq['freq_media']:.0f}d"
+                f"Reposicion: lleva {dias_desde_ultima}d sin pedir, "
+                f"su ciclo habitual es de {freq['freq_media']:.0f}d"
             )
 
         # ── confidence — lower for technical due to variability ─
@@ -282,10 +293,13 @@ class TechnicalEngine:
             "bloque": "Productos Técnicos",
             "provincia": provincia,
             "potencial_h": potencial_h,
-            "dias_desde_ultima_compra": int(dias_desde_ultima),
+"dias_desde_ultima_compra": int(dias_desde_ultima),
             "impacto_estimado": round(impacto, 2),
             "urgencia_dias": urgencia,
             "ratio_promiscuidad": round(ratio_p, 4),
+            "perfil_cliente": perfil,
+            "freq_media_dias": round(freq["freq_media"], 1) if freq["freq_media"] else None,
+            "n_compras_hist": n,
             "tipo_alerta": tipo,
             "motivo": " | ".join(piezas),
             "probabilidad_deteccion": prob,

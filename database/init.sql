@@ -65,6 +65,10 @@ CREATE TABLE IF NOT EXISTS alertas (
     urgencia_dias           SMALLINT    DEFAULT NULL CHECK (urgencia_dias IS NULL OR urgencia_dias BETWEEN 1 AND 90),
     ratio_promiscuidad      REAL        DEFAULT NULL CHECK (ratio_promiscuidad IS NULL OR ratio_promiscuidad BETWEEN 0 AND 1),
 
+    perfil_cliente          TEXT        DEFAULT NULL CHECK (perfil_cliente IN ('leal', 'promiscuo', 'marginal')),
+    freq_media_dias         REAL        DEFAULT NULL CHECK (freq_media_dias IS NULL OR freq_media_dias >= 0),
+    n_compras_hist          INTEGER     DEFAULT NULL CHECK (n_compras_hist IS NULL OR n_compras_hist >= 0),
+
     id_alerta               UUID        NOT NULL DEFAULT gen_random_uuid(),
     fecha                   DATE        NOT NULL DEFAULT CURRENT_DATE,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -122,6 +126,10 @@ COMMENT ON COLUMN alertas.dias_desde_ultima_compra IS 'CURRENT_DATE - MAX(ventas
 COMMENT ON COLUMN alertas.impacto_estimado       IS 'potencial_h - SUM(ventas últimos 12m). € no capturados, en manos de la competencia.';
 COMMENT ON COLUMN alertas.urgencia_dias          IS 'media_ciclo_compras - dias_desde_ultima_compra. Días de margen para contactar antes de perder la ventana.';
 COMMENT ON COLUMN alertas.ratio_promiscuidad     IS '1 - (compras_12m / potencial_h). 0 = leal, 1 = casi todo a competencia.';
+
+COMMENT ON COLUMN alertas.perfil_cliente          IS 'leal (<30% compra en competencia), promiscuo (30-70%), marginal (>70%)';
+COMMENT ON COLUMN alertas.freq_media_dias         IS 'Media de días entre compras para este cliente-familia';
+COMMENT ON COLUMN alertas.n_compras_hist          IS 'Número total de compras históricas para este cliente-familia';
 
 COMMENT ON COLUMN alertas.id_alerta              IS 'UUID generado por PostgreSQL';
 COMMENT ON COLUMN alertas.fecha                  IS 'Fecha en que se inserta la alerta';

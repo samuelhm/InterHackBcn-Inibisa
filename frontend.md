@@ -23,7 +23,8 @@ Funcionalidades planificadas para el dashboard de delegados/televenta.
 ## Detalle de alerta (al hacer clic en una fila)
 
 - [ ] **Motivo completo** (texto generado por el engine).
-- [ ] **Variables que activaron la alerta**: mostrar qué flags se dispararon (frecuencia, volumen, ausencia, anomalía) con valores reales vs umbrales.
+- [ ] **Variables que activaron la alerta**: mostrar qué flags se dispararon (frecuencia, volumen, ausencia, anomalía) con valores reales vs umbrales (leidos del campo `motivo`).
+- [ ] **Métricas del cliente-familia**: ratio_promiscuidad, impacto_estimado, urgencia_dias, dias_desde_ultima_compra, perfil_cliente (leal/promiscuo/marginal), freq_media_dias, n_compras_hist.
 - [ ] **Métricas del cliente-familia**: ratio_promiscuidad, impacto_estimado, urgencia_dias, dias_desde_ultima_compra.
 - [ ] **Historial de compras**: gráfico de líneas (importe por fecha) para ese cliente-familia. Idealmente con plotly para interactividad.
 

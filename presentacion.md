@@ -46,24 +46,32 @@ Puntos a cubrir durante la presentacion del proyecto ante el jurado.
 - [ ] El modelo predice `score_conversion`: probabilidad de que una alerta convierta en venta.
 - [ ] Este score se integra en la prioridad final, ajustando el ranking segun patrones aprendidos.
 
-## 6. Eliminacion de ruido
+## 6. Trazabilidad completa
 
-- [ ] **Filtro estadistico**: clientes con coeficiente de variacion alto requieren senales multiples para generar alerta (evitamos falsos positivos en compradores erraticos).
-- [ ] **Deteccion de campanas**: actualmente no disponemos de una forma fiable de detectar si un pico de ventas corresponde a una campana promocional. Esta capacidad esta planificada en el roadmap como una mejora post-hackathon. En produccion, cruzariamos la tabla `campanas` con los picos de venta para normalizarlos y no generar falsas alertas de deterioro cuando en realidad el cliente simplemente "se salto" un ciclo porque compro de mas durante una promocion.
+- [ ] Cada alerta incluye un **motivo descriptivo** legible por el comercial: "Sin compra hace 129d (umbral: 60d basado en frecuencia media de 30d)" en vez de solo "Ausencia".
+- [ ] Columnas de trazabilidad: `perfil_cliente` (leal/promiscuo/marginal), `freq_media_dias` (ciclo medio de compra), `n_compras_hist` (total compras historicas).
+- [ ] Los 4 flags booleanos (`alerta_frecuencia`, `alerta_volumen`, `alerta_ausencia`, `alerta_anomalia`) permiten filtrar en el dashboard.
+- [ ] El campo `motivo` combina texto con numeros reales: umbrales, porcentajes de caida, Z-scores.
 
-## 7. Sostenibilidad (BCN Clima)
+## 7. Eliminación de ruido
+
+- [ ] **Filtro estadístico**: clientes con coeficiente de variación alto requieren señales múltiples para generar alerta (evitamos falsos positivos en compradores erráticos).
+- [ ] **Filtro de inactividad**: no generamos alertas para cliente-familias cuya última compra es de hace más de 1 año — ya no son nuestros clientes para ese producto.
+- [ ] **Detección de campañas**: actualmente no disponemos de una forma fiable de detectar si un pico de ventas corresponde a una campaña promocional. Planificado en el roadmap post-hackathon.
+
+## 8. Sostenibilidad (BCN Clima)
 
 - [ ] Al optimizar las llamadas comerciales, reducimos desplazamientos innecesarios de delegados.
-- [ ] Al detectar ventanas de captura, evitamos que el negocio se vaya a competidores que pueden tener practicas menos sostenibles.
-- [ ] Infraestructura ligera: PostgreSQL + Python + Streamlit, sin necesidad de grandes clusters de computo.
+- [ ] Al detectar ventanas de captura, evitamos que el negocio se vaya a competidores que pueden tener prácticas menos sostenibles.
+- [ ] Infraestructura ligera: PostgreSQL + Python + Streamlit, sin necesidad de grandes clusters de cómputo.
 
-## 8. Roadmap y escalabilidad
+## 9. Roadmap y escalabilidad
 
 - [ ] Fase actual: deteccion y priorizacion completas, frontend en desarrollo.
 - [ ] Proximos pasos: integracion con CRM de Inibsa, exportacion de alertas a Excel para delegados sin acceso a la plataforma, modelo ML con XGBoost entrenado sobre datos reales.
 - [ ] Arquitectura preparada para escalar: los engines son modulos independientes, se pueden paralelizar y ejecutar en horarios diferentes (deteccion de dia, entrenamiento ML de noche).
 
-## 9. Demo en vivo
+## 10. Demo en vivo
 
 - [ ] Levantar el sistema con `docker compose up`.
 - [ ] Mostrar el dashboard con alertas priorizadas.

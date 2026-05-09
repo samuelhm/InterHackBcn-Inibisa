@@ -265,28 +265,40 @@ class CommodityEngine:
         piezas: list[str] = []
         if ventana:
             piezas.append(
-                f"Ventana captura: promiscuidad {ratio_p:.0%}, "
-                f"gap {dias_desde_ultima}d vs ciclo {freq['freq_media']:.0f}d"
+                f"Ventana de captura: compra solo {ratio_p:.0%} de su potencial "
+                f"(estrategia: {perfil}), lleva {dias_desde_ultima}d sin pedir "
+                f"vs ciclo de {freq['freq_media']:.0f}d"
             )
         if repos:
             piezas.append(
-                f"Reposicion: gap {dias_desde_ultima}d vs "
-                f"ciclo {freq['freq_media']:.0f}d"
+                f"Reposicion: cliente {perfil} lleva {dias_desde_ultima}d sin pedir, "
+                f"su ciclo habitual es de {freq['freq_media']:.0f}d"
             )
         if caida_f:
             piezas.append(
-                f"Caida frecuencia: ultimo gap {freq['ultimo_gap']}d "
-                f"vs media {freq['freq_media']:.0f}d"
+                f"Caida de frecuencia: ultimo intervalo {freq['ultimo_gap']}d "
+                f"vs media historica {freq['freq_media']:.0f}d "
+                f"(umbral {freq['freq_media']:.0f} x {t['caida_frecuencia']['ratio']:.1f} = "
+                f"{freq['freq_media'] * t['caida_frecuencia']['ratio']:.0f}d)"
             )
         if caida_v:
+            caida_pct = (1 - vol['ultimo_volumen'] / vol['vol_medio']) * 100 if vol['vol_medio'] else 0
             piezas.append(
-                f"Caida volumen: {vol['ultimo_volumen']:.0f}EUR "
-                f"vs media {vol['vol_medio']:.0f}EUR"
+                f"Caida de volumen: ultimo pedido {vol['ultimo_volumen']:.0f}EUR "
+                f"vs media {vol['vol_medio']:.0f}EUR (cae {caida_pct:.0f}%)"
             )
         if es_ausencia:
-            piezas.append(f"Ausencia: {dias_desde_ultima}d sin compra")
+            piezas.append(
+                f"Sin compra hace {dias_desde_ultima}d "
+                f"(umbral: {umbral_ausencia:.0f}d basado en frecuencia media de "
+                f"{freq['freq_media']:.0f}d)"
+            )
         if es_anomalo:
-            piezas.append("Actividad anomala (Z-score > 2)")
+            z = compute_z_score(vol['ultimo_volumen'], vol['vol_medio'], vol['vol_std'])
+            piezas.append(
+                f"Actividad anomala: Z-score {z:.1f} "
+                f"(ultimo {vol['ultimo_volumen']:.0f}EUR vs media {vol['vol_medio']:.0f}EUR)"
+            )
 
         # ── Confidence ──────────────────────────────────────────
         prob = 0.95 if n >= 12 else 0.90 if n >= 6 else 0.75
@@ -301,6 +313,9 @@ class CommodityEngine:
             "impacto_estimado": round(impacto, 2),
             "urgencia_dias": urgencia,
             "ratio_promiscuidad": round(ratio_p, 4),
+            "perfil_cliente": perfil,
+            "freq_media_dias": round(freq["freq_media"], 1) if freq["freq_media"] else None,
+            "n_compras_hist": n,
             "tipo_alerta": tipo,
             "motivo": " | ".join(piezas),
             "probabilidad_deteccion": prob,

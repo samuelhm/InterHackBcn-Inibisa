@@ -52,7 +52,7 @@ La tabla `alertas` es el núcleo del sistema. Su esquema completo está en `data
 | Bloque | Columnas | Responsable |
 |--------|----------|-------------|
 | 1 - Datos DB | id_cliente, familia, bloque, provincia, potencial_h | Ingesta |
-| 2 - Calculados | dias_desde_ultima_compra, impacto_estimado, urgencia_dias, ratio_promiscuidad | Analytics |
+| 2 - Calculados | dias_desde_ultima_compra, impacto_estimado, urgencia_dias, ratio_promiscuidad, perfil_cliente, freq_media_dias, n_compras_hist | Analytics |
 | 3 - Auto | id_alerta (UUID), fecha, created_at, updated_at | Sistema |
 | 4 - Detector | tipo_alerta, motivo, probabilidad_deteccion, alerta_frecuencia/volumen/ausencia/anomalia | Engine |
 | 5 - Priorizador | prioridad (0-200), score_conversion (0-1) | IA/ML |
@@ -64,10 +64,15 @@ La tabla `alertas` es el núcleo del sistema. Su esquema completo está en `data
 ## Key Business Logic
 
 ### Detección (4 patrones por cliente-familia)
-1. **Caída de frecuencia** — gap entre compras > 1.5× media histórica
-2. **Caída de volumen** — último importe < 50% media histórica
-3. **Ausencia de compra** — días desde última compra > max(30, 2× frecuencia media)
+1. **Caída de frecuencia** — gap entre compras > 1.5× media histórica (commodity) / 1.3× (técnico)
+2. **Caída de volumen** — último importe < 50% media histórica (commodity) / < 60% (técnico)
+3. **Ausencia de compra** — días desde última compra > max(30, 2× frecuencia media) (commodity) / max(45, 1.5× frecuencia media) (técnico)
 4. **Actividad anómala** — Z-score > 2 en importe o volumen
+
+### Filtros anti-ruido
+- Cliente-familia inactivo > 365 días: no se genera alerta (ya no es cliente nuestro).
+- Técnico con CV > 1.0: requiere ≥ 2 patrones simultáneos.
+- Commodity: `cliente_perdido` si ausencia > 120 días; Técnico: > 180 días.
 
 ### Diferenciación Commodities vs Técnicos
 - **Commodities** (anestesia, agujas, desinfección): compra recurrente. Lógica de consumo esperado, ratio de promiscuidad, ventanas de captura frente a competencia.
@@ -112,7 +117,7 @@ docker compose up
 - **SQL**: snake_case, comentarios de columna con `COMMENT ON`
 - **Commits**: convencionales (`feat:`, `fix:`, `refactor:`, `docs:`)
 - **Variables de entorno**: cargar desde `.env` con `python-dotenv`, nunca hardcodear credenciales
-- **Fechas**: la fecha de referencia del hackathon es `2026-05-09` (hardcodeada en `FECHA_HOY`). En producción usar `datetime.now()`.
+- **Fechas**: la fecha de referencia del hackathon es `FECHA_HOY` (configurable vía env, default `2026-02-01`). En producción usar `datetime.now()`.
 - **Mejoras no prioritarias**: cuando se detecten mejoras interesantes pero no críticas para el hackathon, se anotarán en `low_priority_todo.md` en formato de lista de tareas. No ralentizan el desarrollo principal.
 
 ## Project Structure
@@ -153,8 +158,9 @@ inibisa/
 | Engine Commodity | Implementado (`analytics/src/engine_commodity.py`) |
 | Engine Technical | Implementado (`analytics/src/engine_technical.py`) |
 | Utils compartidos | Implementado (`analytics/utils/`) |
-| Priorizador + ML | Por implementar |
 | Pipeline diario | Implementado (`analytics/main.py`) |
+| Docker Compose (db + analytics) | Implementado |
+| Priorizador + ML | Por implementar |
 | Frontend Streamlit | Por implementar |
 | Entrenamiento ML nocturno | Por implementar |
 | Docker Compose (db + analytics) | Implementado |

@@ -99,7 +99,7 @@ COMMODITY = {
         "z_score": 2.0,
         "min_compras": 5,
     },
-    "perdido_dias": 90,
+    "perdido_dias": 120,
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -127,7 +127,7 @@ TECHNICAL = {
         "z_score": 2.0,
         "min_compras": 5,
     },
-    "perdido_dias": 90,
+    "perdido_dias": 180,
     "noise_filter": {
         "cv_threshold": 1.0,
         "min_patterns_for_noisy": 2,
@@ -151,3 +151,11 @@ FECHA_HOY = datetime.fromisoformat(
 
 DEDUP_WINDOW_DAYS = 7  # Skip creation if a pending alert exists
                        # for the same client-family within this window
+
+# ═══════════════════════════════════════════════════════════════
+# Hard inactivity cutoff
+# ═══════════════════════════════════════════════════════════════
+
+MAX_INACTIVE_DAYS = 365  # If last purchase is older than this,
+                         # the client-family is not considered a
+                         # current customer — no alert is generated

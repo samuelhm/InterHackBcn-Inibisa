@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from analytics.utils.config import (  # noqa: E402
     DEDUP_WINDOW_DAYS,
     FECHA_HOY,
+    MAX_INACTIVE_DAYS,
     TECHNICAL as THRESHOLDS,
 )
 from analytics.utils.db import get_engine  # noqa: E402
@@ -99,7 +100,7 @@ class TechnicalEngine:
             JOIN cliente  c ON v.id_cliente  = c.id
             LEFT JOIN potencial pot
                 ON (v.id_cliente  = pot.id_cliente
-                AND p.familia      = pot.familia)
+                AND p.categoria_h = pot.categoria_productos)
             WHERE v.id_cliente = :cid
             ORDER BY v.fecha ASC
             """
@@ -187,6 +188,10 @@ class TechnicalEngine:
 
         provincia = str(df["provincia"].iloc[0])
         potencial_h = float(df["potencial_h"].iloc[0] or 0)
+
+        # Hard cutoff: skip client-families inactive > 1 year
+        if dias_desde_ultima > MAX_INACTIVE_DAYS:
+            return None
 
         ratio_p = compute_promiscuity_ratio(vol["total_12m"], potencial_h)
         impacto = compute_impacto_estimado(potencial_h, vol["total_12m"])

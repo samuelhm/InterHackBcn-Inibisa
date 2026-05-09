@@ -154,6 +154,7 @@ inibisa/
 | Engine Technical | Implementado (`analytics/src/engine_technical.py`) |
 | Utils compartidos | Implementado (`analytics/utils/`) |
 | Priorizador + ML | Por implementar |
+| Pipeline diario | Implementado (`analytics/main.py`) |
 | Frontend Streamlit | Por implementar |
-| Pipeline diario | Por implementar |
 | Entrenamiento ML nocturno | Por implementar |
+| Docker Compose (db + analytics) | Implementado |

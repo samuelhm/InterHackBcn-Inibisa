@@ -52,7 +52,7 @@ def analizar_cliente(id_cliente):
     FROM ventas v
     JOIN producto p ON v.id_producto = p.id
     JOIN cliente c ON v.id_cliente = c.id
-    LEFT JOIN potencial pot ON (v.id_cliente = pot.id_cliente AND p.familia = pot.familia)
+    LEFT JOIN potencial pot ON (v.id_cliente = pot.id_cliente AND p.categoria_h = pot.categoria_productos)
     WHERE v.id_cliente = {id_cliente}
     ORDER BY v.fecha ASC
     """

@@ -2,9 +2,9 @@
 """
 Daily pipeline orchestrator — Smart Demand Signals.
 
-Runs detection engines (commodity + technical) and inserts alerts into
-the ``alertas`` table.  Scheduled to run at startup and then every day
-at 20:00 (UTC).
+Runs detection engines (commodity + technical), inserts alerts into
+the ``alertas`` table, then prioritises them.  Scheduled to run at
+startup and then every day at 20:00 (UTC).
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from analytics.src.engine_commodity import CommodityEngine  # noqa: E402
 from analytics.src.engine_technical import TechnicalEngine  # noqa: E402
+from analytics.src.prioritizer import Prioritizer  # noqa: E402
 from analytics.utils.config import FECHA_HOY  # noqa: E402
 from analytics.utils.db import get_engine  # noqa: E402
 
@@ -71,9 +72,10 @@ def wait_for_db(engine, max_retries: int = DB_RETRY_MAX,
 # ═══════════════════════════════════════════════════════════════
 
 def run_pipeline(engine):
-    """Execute detection → insert cycle once."""
+    """Execute detection → insert → prioritisation cycle once."""
     logger.info("=== Pipeline start ===")
 
+    # ── Step 1: Detection ──────────────────────────────────────────
     commodity = CommodityEngine(engine=engine, fecha_ref=FECHA_HOY)
     technical = TechnicalEngine(engine=engine, fecha_ref=FECHA_HOY)
 
@@ -83,34 +85,36 @@ def run_pipeline(engine):
 
     logger.info("Total alerts generated: %d", len(all_alerts))
 
-    if not all_alerts:
-        logger.info("No new alerts to insert.")
-        logger.info("=== Pipeline end ===")
-        return
+    if all_alerts:
+        # Safety dedup within the same run
+        df = pd.DataFrame(all_alerts)
+        before = len(df)
+        df = df.drop_duplicates(subset=["id_cliente", "familia"])
+        if len(df) < before:
+            logger.info("Dropped %d intra-run duplicates", before - len(df))
 
-    # Safety dedup within the same run (engines already filter per-client-family)
-    df = pd.DataFrame(all_alerts)
-    before = len(df)
-    df = df.drop_duplicates(subset=["id_cliente", "familia"])
-    if len(df) < before:
-        logger.info("Dropped %d intra-run duplicates", before - len(df))
+        with engine.connect() as conn:
+            trans = conn.begin()
+            try:
+                df.to_sql(
+                    "alertas",
+                    conn,
+                    if_exists="append",
+                    index=False,
+                    method="multi",
+                    chunksize=500,
+                )
+                trans.commit()
+                logger.info("Inserted %d alert(s) into alertas table", len(df))
+            except Exception:
+                trans.rollback()
+                logger.exception("Insert failed — transaction rolled back")
 
-    with engine.connect() as conn:
-        trans = conn.begin()
-        try:
-            df.to_sql(
-                "alertas",
-                conn,
-                if_exists="append",
-                index=False,
-                method="multi",
-                chunksize=500,
-            )
-            trans.commit()
-            logger.info("Inserted %d alert(s) into alertas table", len(df))
-        except Exception:
-            trans.rollback()
-            logger.exception("Insert failed — transaction rolled back")
+    # ── Step 2: Prioritisation ──────────────────────────────────────
+    prioritizer = Prioritizer(engine=engine)
+    n_prio = prioritizer.run()
+    if n_prio:
+        logger.info("Prioritised %d alert(s)", n_prio)
 
     logger.info("=== Pipeline end ===")
 

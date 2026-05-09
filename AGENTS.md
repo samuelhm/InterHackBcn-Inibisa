@@ -160,7 +160,8 @@ inibisa/
 | Utils compartidos | Implementado (`analytics/utils/`) |
 | Pipeline diario | Implementado (`analytics/main.py`) |
 | Docker Compose (db + analytics) | Implementado |
-| Priorizador + ML | Por implementar |
+| Priorizador | Implementado (`analytics/src/prioritizer.py`) — score 0-200 con 6 factores ponderados |
+| ML Engine (stub) | Implementado (`analytics/src/ml_engine.py`) — retorna 0.0, lista para modelo |
 | Frontend Streamlit | Por implementar |
 | Entrenamiento ML nocturno | Por implementar |
 | Docker Compose (db + analytics) | Implementado |

@@ -30,6 +30,8 @@ para el hackathon. Se abordarán si sobra tiempo o post-evento.
 - [ ] Filtrar ruido en commodities igual que en técnicos (CV analysis)
 - [ ] Añadir test suite (pytest) para engines y métricas
 - [ ] Logging structured (JSON) para trazabilidad en producción
+- [ ] **Pipeline diario: recrear alertas sin feedback** — el pipeline debería hacer `DELETE FROM alertas WHERE feedback IS NULL` antes de la detección, para que los datos (urgencia, impacto, motivo) se recalculen con valores frescos. Actualmente las alertas envejecen dentro de la ventana de dedup (7 días). Si se implementa esto, `_alert_exists()` dejaría de ser necesario. Las alertas con `feedback IS NOT NULL` se preservan siempre (son datos de entrenamiento para ML). Trade-off: los `id_alerta` cambian cada día. Para producción se podría migrar a UPDATE in-place manteniendo el ID.
+- [ ] **Priorizador: recalcular pesos automáticamente** — si se cambian los pesos en `config.py`, el priorizador solo aplica los nuevos a alertas sin priorizar. Para actualizar las ya existentes, haría falta un `UPDATE` masivo con los nuevos pesos. Considerar si el pipeline diario debe incluir un repriorizado de alertas pendientes.
 
 ## Frontend
 

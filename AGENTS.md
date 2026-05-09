@@ -113,6 +113,7 @@ docker compose up
 - **Commits**: convencionales (`feat:`, `fix:`, `refactor:`, `docs:`)
 - **Variables de entorno**: cargar desde `.env` con `python-dotenv`, nunca hardcodear credenciales
 - **Fechas**: la fecha de referencia del hackathon es `2026-05-09` (hardcodeada en `FECHA_HOY`). En producción usar `datetime.now()`.
+- **Mejoras no prioritarias**: cuando se detecten mejoras interesantes pero no críticas para el hackathon, se anotarán en `low_priority_todo.md` en formato de lista de tareas. No ralentizan el desarrollo principal.
 
 ## Project Structure
 
@@ -137,7 +138,9 @@ inibisa/
 ├── data/              # Datos raw (Datasets.xlsx)
 ├── detector_alertas.py # Script standalone de detección (prototipo)
 ├── docker-compose.yml
-└── .env
+├── .env
+├── low_priority_todo.md # Mejoras no prioritarias post-hackathon
+└── ROADMAP.md           # Plan de fases de desarrollo
 ```
 
 ## Current Status
@@ -147,8 +150,9 @@ inibisa/
 | DB + ingesta | Funcional |
 | Tabla alertas (schema) | Integrada en `init.sql` |
 | Motor de detección | Prototipo funcional (`detector_alertas.py`) |
-| Engine Commodity | Por implementar |
-| Engine Technical | Por implementar |
+| Engine Commodity | Implementado (`analytics/src/engine_commodity.py`) |
+| Engine Technical | Implementado (`analytics/src/engine_technical.py`) |
+| Utils compartidos | Implementado (`analytics/utils/`) |
 | Priorizador + ML | Por implementar |
 | Frontend Streamlit | Por implementar |
 | Pipeline diario | Por implementar |

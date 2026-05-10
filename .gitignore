@@ -26,7 +26,6 @@ pip-delete-this-directory.txt
 
 # ─── Docker ─────────────────────────────────────────────
 docker-data/
-pgdata/
 
 
 # ─── Jupyter Notebooks ─────────────────────────────────

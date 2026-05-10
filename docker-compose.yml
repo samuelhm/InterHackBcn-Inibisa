@@ -13,7 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/00-init.sql
-      - ./pgdata:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
@@ -42,3 +42,6 @@ services:
 networks:
   inibsa_network:
     driver: bridge
+
+volumes:
+  postgres_data:

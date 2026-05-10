@@ -28,34 +28,6 @@ pip-delete-this-directory.txt
 docker-data/
 pgdata/
 
-# ─── PostgreSQL ─────────────────────────────────────────
-*.sql~
-*.sql.bak
-
-# ─── Environment & Secrets ──────────────────────────────
-.env
-.env.local
-.env.*.local
-*.key
-*.pem
-secrets/
-credentials.json
-
-# ─── Data Files (large CSVs/Excel for development) ──────
-data/raw/*
-data/*.xlsx
-data/*.csv
-!data/raw/.gitkeep
-
-# ─── ML Models ──────────────────────────────────────────
-analytics/models/*
-!analytics/models/.gitkeep
-*.pkl
-*.joblib
-*.h5
-*.onnx
-*.pt
-*.pth
 
 # ─── Jupyter Notebooks ─────────────────────────────────
 .ipynb_checkpoints/

@@ -19,6 +19,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - inibsa_network
 
   analytics:
     build:
@@ -38,6 +40,21 @@ services:
         condition: service_healthy
     volumes:
       - ./analytics/models:/app/analytics/models
+    networks:
+      - inibsa_network
+
+  frontend:
+      build: ./frontend
+      container_name: inibsa_ui
+      ports:
+        - "8501:8501"
+      depends_on:
+        db:
+          condition: service_healthy
+      environment:
+        DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      networks:
+        - inibsa_network
 
 networks:
   inibsa_network:

@@ -55,10 +55,13 @@ services:
         DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       networks:
         - inibsa_network
+        - red_proxy
 
 networks:
   inibsa_network:
     driver: bridge
+  red_proxy:
+    external: true
 
 volumes:
   postgres_data:
